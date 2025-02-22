@@ -1,0 +1,99 @@
+import folium
+from folium import plugins
+
+def creer_carte_itineraire_palerme(points, nom_fichier="itineraire_palerme.html"):
+    """
+    Crée une carte interactive de l'itinéraire à Palerme
+    
+    Parameters:
+    points: liste de tuples (latitude, longitude, nom_lieu, description, horaires, tarif)
+    nom_fichier: nom du fichier HTML de sortie
+    """
+    # Créer une carte centrée sur Palerme
+    carte = folium.Map(
+        location=[38.1157, 13.3615],  # Coordonnées de Palerme
+        zoom_start=15,
+        tiles='OpenStreetMap'
+    )
+    
+    # Ajouter des marqueurs pour chaque point avec des popups détaillées
+    for i, (lat, lon, nom, description, horaires, tarif) in enumerate(points, 1):
+        # Créer le contenu HTML du popup
+        popup_content = f"""
+        <h4>{i}. {nom}</h4>
+        <p><strong>Horaires :</strong> {horaires}</p>
+        <p><strong>Tarif :</strong> {tarif}</p>
+        <p>{description}</p>
+        """
+        
+        # Ajouter le marqueur avec un numéro
+        folium.Marker(
+            location=[lat, lon],
+            popup=folium.Popup(popup_content, max_width=300),
+            icon=folium.DivIcon(
+                html=f'<div style="background-color: #3388ff; color: white; border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">{i}</div>'
+            )
+        ).add_to(carte)
+    
+    # Créer une ligne pour l'itinéraire
+    coordonnees = [[lat, lon] for lat, lon, _, _, _, _ in points]
+    folium.PolyLine(
+        coordonnees,
+        weight=3,
+        color='red',
+        opacity=0.8
+    ).add_to(carte)
+    
+    # Ajouter un contrôle pour mesurer les distances
+    plugins.MeasureControl(position='topright').add_to(carte)
+    
+    # Ajouter une minimap
+    minimap = plugins.MiniMap()
+    carte.add_child(minimap)
+    
+    # Sauvegarder la carte
+    carte.save(nom_fichier)
+    
+    return carte
+
+# Points d'intérêt de Palerme
+points_palerme = [
+    (38.1166, 13.3597, "Quattro Canti", 
+     "Place octogonale du XVIIe siècle, symbole du baroque sicilien",
+     "Accès libre 24h/24", "Gratuit"),
+    
+    (38.1157, 13.3615, "Fontaine Pretoria",
+     "Chef-d'œuvre maniériste du XVIe siècle avec divinités mythologiques",
+     "Accès libre", "Gratuit"),
+    
+    (38.1155, 13.3621, "Église Santa Maria dell'Ammiraglio",
+     "Église byzantine-normande avec mosaïques dorées",
+     "9h30-18h30 (lun-sam), 9h-13h (dim)", "2€"),
+    
+    (38.1111, 13.3525, "Palais des Normands",
+     "Ancien palais royal avec la Chapelle Palatine",
+     "8h15-17h40 (lun-sam), 8h15-13h (dim)", "15€"),
+    
+    (38.1150, 13.3558, "Cathédrale de Palerme",
+     "Cathédrale mêlant styles gothique, baroque et néoclassique",
+     "7h-19h (lun-sam), 8h-13h et 16h-19h (dim)", "7-12€"),
+    
+    (38.1106, 13.3644, "Marché de Ballarò",
+     "Marché historique avec street-food et épices",
+     "7h-20h (lun-sam)", "Gratuit"),
+    
+    (38.1203, 13.3572, "Teatro Massimo",
+     "Plus grand opéra d'Italie, style néoclassique",
+     "Visites guidées 10h-17h", "10€"),
+    
+    (38.1089, 13.3506, "Catacombes des Capucins",
+     "Catacombes abritant 8000 momies",
+     "9h-12h30 et 15h-17h30", "3€"),
+    
+    (38.1172, 13.3603, "Palazzo Branciforte",
+     "Palais Renaissance avec collections d'art",
+     "9h30-18h30 (mar-dim)", "8€")
+]
+
+# Créer la carte
+carte = creer_carte_itineraire_palerme(points_palerme)
